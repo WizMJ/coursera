@@ -1,0 +1,81 @@
+---
+title: "Regression Analysis Assignment"
+author: "Minki Jo"
+date: "December 3rd, 2017"
+output: pdf_document
+---
+
+### Introduction
+This report explores the relationship between a set of variables and outcome, miles per gallon (MPG). This answers to the following two questions :
+
++ “Is an automatic or manual transmission better for MPG”
++ "Quantify the MPG difference between automatic and manual transmissions"
+
+### Executive summary
+This reports shows that manual transmission increases efficiency in mpg compared with cars with automatic transmission. From the multiple regression analysis, the model that has the least AIC for explanation of mpg has three variables such as wt, qsec, and transmission type. However qsec variable remains controversial. This might come from size of the data set. Therefore, further investigation should be executed for better accuracy and interpretation.
+
+### Explorating data analysis
+
+```{r setup, include=FALSE}
+library(ggplot2); library(car)
+data(mtcars)
+dim(mtcars)
+mtcars$am <- factor(ifelse(mtcars$am==0, "Automatic", "Manual"))
+```
+Data consists of 32 observations with 12 variables. Let's take a look at how outcome (MPG) data looks like in terms of transmission type.
+
+```{r}
+g <- ggplot(data = mtcars, aes(x = am, y = mpg))
+g <-  g + geom_boxplot() + geom_point(col = "red", alpha = 0.3, size =5)
+g
+```
+
+It looks a lot like like cars with manual trasmission has better mpg than those with automatic transmission. But since some observations in manual transmission have worse mpg than those of automatic transmission, one might say it is not obvious to say manual cars has better in mpg than automatic transmission cars. In order to verify that, independent 2 sample t-test is required. As we know, simple linear regression analysis provides p-value and it results from 2 sample t-test when one variable has only two factors. Here is the result with the assumption that each observation has equal variable.
+
+```{r}
+fit <- lm(mpg ~ am, data = mtcars)
+summary(fit)$coefficients
+```
+
+Based on p-value for factor variable, **it is proved that cars with manual transmission has better in mpg than automatic transmission cars.** 
+Now, let's quantifiy how different it is between transmission types. The coefficient of amManual  shows that cars with manual transmission has **`r round(coef(fit)[2],3)`** higher mpg in average than those with automatic transmission. It is also said that mpg in average for automatic cars **`r round(coef(fit)[1],3)`** because coefficient of intercepts indicates automatic factor.
+
+### Variable selection for multiple regresion model
+
+There are several methods to select variable for multi-variable linear regression model. This reports uses AIC which trades off between squared error and number of variable. That is, when AIC is the least, number of variables included and error are overally minimum. In search for minimum AIC, step function is used which applies backward step.   
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, paged.print=FALSE, results="hide"}
+full <- lm(mpg ~., data = mtcars) 
+final <- step(full)
+```
+
+```{r}
+summary(final)
+```
+
+Results indicates that model with the least AIC have three variables such as vehicle weight, time to reach 1/4 miles, and transmission type. Since R-squared is high enough like 84.97%, mpg can be explained by linear model.
+
+If selected variables are highly correlated each other, calculated coefficients can be distorted and its variabion can be inflated  Here are variation inflation factors for the selected variables
+
+```{r}
+vif(final)
+```
+
+vif with 5 is usually used for baseline to check whether or not the variable makes variation inflated. Frome the results above, **selected variables are not highly correlated each other.**
+
+### Conclusion
+
+Looking into residual and diagnostic plot (Appendix 1), 4 assumptions for regression model such as linearity, normality, heteroscedasticity, leverage with discrepancy are met. Therefore, our final model is justifiable.
+
+Final model shows that cars' mpg with manual transmission is increased by 2.93 in average compared with cars with automatic transmission when other variables (qsec and wt) are fixed. Also, when a car weights 1,000 lbs more, mpg is reduced by 3.92. This is also the case that other variables (transmission type and qsec) are fixed. These interpretation can be accepted because of the common sense
+
+However, the interpretation that reducing car acceleration(qsec) increases mpg remain controverial. This requires either to investigate further for the qsec variation(e.g. get more data) or to omit the variable.
+
+### Appendix1: Residual plot and diagnostics for multiple linear regression model
+
+```{r}
+par(mfrow=c(2,2))
+plot(final)
+```
+
+

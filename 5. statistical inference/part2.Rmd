@@ -1,0 +1,76 @@
+---
+title: 'Part2: Basic Inferential Data Analysis Instructions'
+author: "Minki Jo"
+date: "November, 19, 2017"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+### Overview
+In the second portion of the project, ToothGrowth data of datasets package in R is analyzed.
+
+### Load data
+Load libraries that are used for this part in advance and get ToothGrowth data
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+library(datasets)
+library(ggplot2)
+data <- ToothGrowth
+```
+
+### Summary of the data
+Summary and dim function show how original data looks like. Below are how these data look like.
+```{r}
+dim(data)
+names(data)
+summary(data)
+```
+
+ToothGrowth data is a data.frame format with `r dim(data)[1]` observations on `r dim(data)[2]` variables. Three variables each are len, supp, and dosetooth. From the ?ToothGrowth, we can see what each variable mean (tooth length, supplement type, and dose in milligrams/day respectively)
+
+The ranges for len and dose are from 4.2 to 33.9 and from 0.5 to 2 respectively. But variable "dose" only has integer number between its range. The another variable "suppp" consists of two factors such as OJ(Orange Juice), VC(ascorbic acid).
+
+### Exploratory Data Analyses
+
+Let's plot of len versus dose by supp factor.
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+g <- ggplot(data = data, aes(x = factor(supp), y = len))
+g <- g + geom_boxplot(aes(fill = supp)) + facet_grid(~dose) 
+g <- g + xlab("Supplement Type") + ylab("Tooth Length") + ggtitle("Tooth growth by supplement type and amount of dose levels") + theme_bw()+ labs(colour="Male/Female") 
+g
+```
+
+### Hypothesis test and confidence interval
+As looking at boxplot above, the effectivenss of supplement type and dose levels should be looked into. All hypothesis tests in this report use 0.05 significant level.
+
+First, let's see how supplement type affects tooth growth in general
+
+```{r}
+t.test(len ~ supp, paired = FALSE, var.equal = TRUE, data=data)
+```
+Thre result shows that it fails to reject null hypothesis p-value > 0.05), which means there is **no impact on tooth growth by supplement type.** In order to conclude such that, it is needed to take more tests that show there is still no diffrence for supplement type by dose level. 
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+t.test(len~supp,paired = FALSE, var.equal = TRUE, data=subset(data, dose == 0.5))
+t.test(len~supp,paired =FALSE, var.equal= TRUE, data=subset(data, dose == 1))
+t.test(len~supp,paired = FALSE, var.equal = TRUE, data=subset(data, dose == 2))
+```
+From the above hypothesis test results, we can say **there is difference between OJ and VC for dose level of 0.5 and 1 milligrams/day**, which contradicts initial conclusion above. **For 2 milligrams/day dose level, there is still no difference.** (see 95 percent confience interval for diffrence from -.3.7 to 3.6)
+
+Now, it it time to test dose level affects tooth growth. Since hypothysis test for dose level betwen 0.5 and 1, and between 1 and 2 can cover dose level of 0.5 and 2, it is not necessary to see the difference for dose level of 0.5 and 2.
+
+```{r}
+t.test(len ~ dose, paired = FALSE, var.equal = TRUE, data = subset(data, dose %in% c(0.5,1.0)))
+t.test(len ~ dose, paired = FALSE, var.equal = TRUE, data = subset(data, dose %in% c(1.0,2.0)))
+```
+
+The results shows there is significant difference for given dose levels. 
+
+### Conclusion
+Hypothesis test is assumed that 60 observations are randomly sampled so that it can be a representative of the population. Also, it is assumed that distribution of sample means follows the Central Limit Theorem 
+
+Based on those assumptions, we can conclude that :
+
++ Increased dose level results in increased tooth length.
++ Supplement type has no effect when dose level is 2.0, but it has when it is 0.5 and 1.0
