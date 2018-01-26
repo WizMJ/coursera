@@ -1,0 +1,23 @@
+---
+title: "Week 3 Assignment for Developing Data Products"
+author: "Minki Jo"
+date: "January 10, 2018"
+output: ioslides_presentation
+---
+
+## About data
+
+The data, *`mtcars`* which was extracted from the 1974 Motor Trend US magazine.
+
+This comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles 
+
+## Simply Plot_ly
+
+```{r cars, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+library(plotly)
+
+data(mtcars)
+mtcars$cyl = as.factor(mtcars$cyl)
+plot_ly(data= mtcars, x= ~wt, y= ~mpg, mode ='markers', color = ~cyl, size=~hp)
+```
+
