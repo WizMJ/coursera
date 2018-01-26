@@ -55,4 +55,4 @@ In order to activate the shiny application,
 visit <https://wizmj.shinyapps.io/distribution/>
 
 For the source code for the shiny application,
-visit github <  >
+visit github <https://github.com/WizMJ/coursera/tree/master/9.%20developing%20data%20products/Peer%20Assignment2>
